@@ -4,8 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>BUBAUM 추첨</title>
     <style>
+      @font-face {
+        font-family: "Pretendard";
+        src: url("./Pretendard.ttf") format("truetype"); /* TTF */
+        font-weight: 400;
+        font-display: swap;
+      }
       html,
       body {
         margin: 0;
@@ -15,8 +21,9 @@
         text-align: center;
         background-color: rgb(0, 0, 0);
         overflow: hidden;
+        user-select: none;
+        font-family: "Pretendard", sans-serif;
       }
-
       .container {
         display: flex;
         justify-content: center;
@@ -32,28 +39,7 @@
         top: 15px;
         left: 50%;
         transform: translateX(-40%);
-      }
-
-      .right-floating-btn {
-        position: fixed;
-        right: 20px;
-        bottom: 20px;
-        z-index: 5;
-        background-color: rgb(255, 255, 255);
-        color: rgb(0, 0, 0);
-        border: none;
-        padding: 20px 30px;
-        font-size: 1.5rem;
-        cursor: pointer;
-        border-radius: 5px;
-        box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.5);
-      }
-      .right-floating-btn:active {
-        transform: scale(0.95);
-        transition: transform 0.1s;
-      }
-      .right-floating-btn:hover {
-        background-color: rgb(220, 220, 220);
+        user-select: none;
       }
 
       .light {
@@ -73,36 +59,49 @@
         }
       }
       .input-result {
-        width: 220px;
+        width: 383px;
         height: fit-content;
         position: absolute;
         z-index: 2;
-        left: 15px;
-        top: 15px;
+        left: 49px;
+        top: 32px;
         min-height: 50px;
-        background: white;
-        border-radius: 5px;
+        border-radius: 30px;
         display: flex;
-        justify-content: start;
-        align-items: center;
-        font-size: 25px;
-        gap: 5px;
         flex-direction: column;
-        padding: 5px;
-        box-shadow: 1px 1px 10px rgba(255, 255, 255, 0.65);
-        color: rgb(143, 143, 143);
+        border: 5px solid #ff9350;
+        box-shadow: 1px 1px 1px #ff751f;
+        color: white;
+        overflow: hidden;
       }
+      .input-result-head {
+        background: #ff751f;
+        padding: 22px 40px;
+        font-size: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .input-result-body {
+        padding: 22px 40px;
+        font-size: 32px;
+        padding: 30px 40px;
+        min-height: 100px;
+      }
+
       #result {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-        font-size: 15px;
+        font-size: 32px;
+        color: #fff;
+        justify-content: space-between;
+        align-items: center;
+        gap: 4px;
       }
-      #total-size {
-        font-size: 15px;
-        font-weight: 900;
-        color: rgb(0, 0, 0);
+      #result div {
+        width: fit-content;
       }
+
       .current-winning {
         position: absolute;
         z-index: 2;
@@ -115,18 +114,42 @@
         align-items: center;
       }
       .winner-text {
-        font-size: 50px;
-        user-select: none;
-        font-weight: bold;
-        background: linear-gradient(90deg, #ffcc00, #ff6699, #66ccff);
-        background-size: 200% auto;
-        text-transform: uppercase;
-        padding: 20px 40px;
-        border-radius: 10px;
+        display: flex;
+        width: 440px;
+        padding: 45px 30px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
         opacity: 1;
-        animation: textEffect 2s ease-out forwards, textEffect 2.5s;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-        width: max-content;
+        animation: textEffect 2s ease-out forwards, textEffect 2.5s forwards;
+        background: white;
+        border: 4px solid rgb(255, 132, 55);
+        box-shadow: 0 0 10px rgba(255, 132, 55, 0.5);
+        border-radius: 20px;
+      }
+      .winner-text-title {
+        color: #ff6200;
+        font-family: Pretendard;
+        font-size: 46px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+      }
+      .winner-text-number {
+        display: flex;
+        width: 384px;
+        height: 67px;
+        justify-content: center;
+        align-items: center;
+        border-radius: 13px;
+        background: #ff751f;
+        color: var(--Background-White, #fff);
+        font-family: Pretendard;
+        font-size: 30px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
       }
 
       @keyframes textEffect {
@@ -152,10 +175,8 @@
         user-select: none;
         font-weight: bold;
         text-transform: uppercase;
-        font-family: "Courier New", Courier, monospace;
         animation: opaicityZeroToOne 2s ease-out forwards;
       }
-
       @keyframes opaicityZeroToOne {
         0% {
           opacity: 0;
@@ -175,17 +196,93 @@
         color: white;
         z-index: 5;
       }
+      .btn-box {
+        position: fixed;
+        z-index: 2;
+        right: 45px;
+        bottom: 40px;
+        width: 400px;
+        display: flex;
+        flex: 1;
+        justify-content: space-between;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .right-floating-btn {
+        display: flex;
+        width: 200px;
+        height: 80px;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        border: none;
+        background: #ff751f;
+        color: var(--Background-White, #fff);
+        font-size: 27px;
+        font-style: normal;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .right-floating-btn-reset {
+        display: flex;
+        width: 200px;
+        height: 80px;
+        justify-content: center;
+        align-items: center;
+        border: none;
+        color: var(--Neutral-800, #3d3d3d);
+        font-size: 27px;
+        font-style: normal;
+        font-weight: 600;
+        gap: 7.5px;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
     <div class="container">
-      <button class="right-floating-btn" type="button" onclick="goStart()">
-        추첨 시작하기!
-      </button>
+      <div class="btn-box">
+        <button
+          class="right-floating-btn-reset"
+          type="button"
+          onclick="reset()"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="27"
+            height="26"
+            viewBox="0 0 27 26"
+            fill="none"
+          >
+            <path
+              d="M4.30269 16.2392C5.00517 18.233 6.33662 19.9444 8.09642 21.1157C9.85623 22.287 11.9491 22.8547 14.0596 22.7332C16.1701 22.6118 18.184 21.8077 19.7978 20.4423C21.4116 19.0769 22.5378 17.224 23.0069 15.1628C23.476 13.1016 23.2625 10.9439 22.3985 9.0146C21.5345 7.08534 20.0669 5.4891 18.2167 4.4664C16.3666 3.4437 14.2342 3.04994 12.1408 3.34445C8.6065 3.84168 6.27142 6.40339 3.75 8.66602M3.75 8.66602V2.16602M3.75 8.66602H10.25"
+              stroke="#5B5B5B"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>RESET</span>
+        </button>
+        <button
+          id="right-floating-btn"
+          class="right-floating-btn"
+          type="button"
+          onclick="goStart()"
+        >
+          START
+        </button>
+      </div>
+
       <br />
       <div class="input-result">
-        <div>결과 <small id="total-size"></small></div>
-        <div id="result"></div>
+        <div class="input-result-head">
+          <div>TOTAL</div>
+          <small id="total-size"></small>
+        </div>
+        <div class="input-result-body">
+          <div id="result"></div>
+        </div>
       </div>
       <br />
       <div id="arrow">↓</div>
@@ -195,9 +292,398 @@
       </div>
     </div>
 
-    <script src="/src/main.js"></script>
+    <!-- <script src="./main.js"></script> -->
     <div class="footer">
       Created by Fintech team Front Engineer &middot; All rights reserved
     </div>
   </body>
 </html>
+<script>
+  const canvas = document.getElementById("myCanvas");
+  const ctx = canvas.getContext("2d");
+  let arrow = document.getElementById("arrow");
+
+  let width = canvas.width;
+  let height = canvas.height;
+
+  const exceptArray = [...getExceptDataFromLocalStorage()];
+  let devide = []; //나눌 갯수 입니다
+  const degree = 360; //원은 360도..ㅋ
+  let goalDegree = 270 + degree / devide.length / 2; // 한 칸의 절반만큼 조정
+  const LOOP_NUMBER = 120;
+  function buildDevideArray(exceptValue) {
+    devide.splice(0, devide.length); //기존에 있던 데이터는 삭제합니다
+    for (let i = 0; i < LOOP_NUMBER; i++) {
+      if (!exceptValue.includes(i)) {
+        devide.push(i);
+      }
+    }
+  }
+
+  if (exceptArray.length > 0) {
+    const mother = document.getElementById("result");
+    exceptArray.forEach((item) => {
+      const newChild = document.createElement("div");
+      newChild.textContent = `${item + 1}번, `;
+      mother.appendChild(newChild);
+    });
+    document.getElementById("total-size").textContent = `${
+      document.getElementById("result").childNodes.length
+    }개`;
+  }
+
+  //랜덤숫자 반환 함수 입니다
+  function getRandomNumberBetween(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  }
+  const colorCode = ["red", "black", "green"];
+
+  let data = [];
+
+  function buildDataArray() {
+    data.splice(0, data.length); //기존에 있던 데이터는 삭제합니다
+    for (let i = 0; i < devide.length; i++) {
+      let json = {
+        first: (degree / devide.length) * i,
+        last: (degree / devide.length) * (i + 1),
+        text: devide[i] + 1,
+        color: colorCode[i % 3],
+      };
+      data.push(json);
+    }
+    goalDegree = 270 + degree / devide.length / 2;
+  }
+
+  buildDevideArray(exceptArray);
+  buildDataArray();
+  //각도를 라디안으로 계산합니다
+  function degreesToRadians(degrees) {
+    const pi = Math.PI;
+    return degrees * (pi / 180);
+  }
+
+  let gradient = ctx.createRadialGradient(
+    width / 2,
+    height / 2,
+    100,
+    width / 2,
+    height / 2,
+    width
+  );
+
+  //그리는 함수 입니다
+  function drawing(todo) {
+    if (!todo && isWorking) return; //동작중인 상태에서 호출되지 않게 합니다
+    ctx.clearRect(0, 0, width, height);
+
+    // **1. 배경 그라디언트 추가**
+
+    data.map((item, _) => {
+      //부채꼴을 그립니다
+      ctx.save();
+      ctx.beginPath();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "white";
+      ctx.fillStyle = item.color;
+      ctx.moveTo(width / 2, height / 2);
+      ctx.arc(
+        width / 2,
+        height / 2,
+        width * 0.497,
+        (Math.PI / 180) * item.first,
+        (Math.PI / 180) * item.last,
+        false
+      );
+      ctx.fill();
+      ctx.stroke();
+      ctx.closePath();
+      ctx.restore();
+
+      //글씨를 넣습니다
+      ctx.save();
+      let half = Math.abs(item.first - item.last) / 2;
+      let degg = item.first + half;
+      let xx =
+        ((Math.cos(degreesToRadians(degg)) * width) / 2) * 0.95 + width / 2;
+      let yy =
+        ((Math.sin(degreesToRadians(degg)) * width) / 2) * 0.95 + height / 2; // 글씨 위치를 좀 더 위로
+      let minus = ctx.measureText(item.text).width / 2 + 1;
+      ctx.fillStyle = "white";
+      ctx.font = "normal 11px sans-serif";
+      ctx.fillText(item.text, xx - minus, yy);
+      ctx.restore();
+      if (todo) todo(item); //콜백이 있으면 실행하여 줍니다
+
+      return item;
+    });
+
+    //가운데 원
+    ctx.save();
+    ctx.beginPath();
+    ctx.lineWidth = 5;
+    ctx.fillStyle = "black";
+    ctx.strokeStyle = "white";
+    ctx.arc(width / 2, height / 2, 150, 0, 2 * Math.PI, false);
+    ctx.fill();
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
+
+    //중간 선
+    ctx.save();
+    ctx.beginPath();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "white";
+    ctx.arc(width / 2, height / 2, 170, 0, 2 * Math.PI, false);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
+
+    //숫자 뒤 외부 테두리
+    ctx.save();
+    ctx.beginPath();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "white";
+    ctx.arc(width / 2, height / 2, width * 0.46, 0, 2 * Math.PI, false);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
+
+    //바깥 외부 테두리
+    ctx.save();
+    ctx.beginPath();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "white";
+    ctx.arc(width / 2, height / 2, width * 0.498, 0, 2 * Math.PI, false);
+    ctx.stroke();
+    ctx.closePath();
+    ctx.restore();
+  }
+
+  function runCircle(calback) {
+    const int = 1; //각도 증감용 숫자
+    //let time = 10; //회전속도
+    let count = 0; //정점용 숫자(count번 돌고 randomNum갯수에 다다르면 멈춤)
+    let randomNum = getRandomNumberBetween(360, 600); //멈출 횟수를 정합니다
+
+    let breaker = 0;
+    function runBeforeCheck() {
+      let _int = 1;
+      let _count = 0;
+      while (_count > randomNum) {
+        data.forEach((item) => {
+          item.first = item.first + _int;
+          item.last = item.last + _int;
+        });
+      }
+      let { first } = data[0];
+      let cnt = 0;
+      while (first > goalDegree) {
+        first -= degree;
+        cnt += 1;
+      }
+      let result = null;
+      data.forEach((item) => {
+        let findFirst = item.first - degree * cnt;
+        let findLast = item.last - degree * cnt;
+        if (findFirst < goalDegree && goalDegree < findLast) {
+          result = item;
+        }
+      });
+      return result;
+    }
+
+    while (!runBeforeCheck()) {
+      randomNum = getRandomNumberBetween(360, 600); //멈출 횟수를 정합니다
+      breaker++;
+      if (breaker > 1200) {
+        console.log("무한루프 발생");
+        break;
+      }
+    }
+    console.log(runBeforeCheck());
+
+    function innerLooper() {
+      if (count > randomNum) {
+        arrow.style.transition = "transform 0.6s ease-out"; // 멈출 때 부드럽게 복귀
+        arrow.style.transform = "translateX(-40%) rotate(0deg)";
+        if (calback) calback(randomNum); //다 돌면 콜백 함수를 호출 합니다
+        return;
+      }
+      setTimeout(() => {
+        drawing((item) => {
+          //그립니다
+          item.first = item.first + int;
+          item.last = item.last + int;
+        });
+        let tilt = getRandomNumberBetween(5, 10); // 기울기 정도 키움
+        let direction = -tilt; // 좌우로 흔들리게 함
+        arrow.style.transform = `transform 2.5s ease-out`;
+        arrow.style.transform = `translateX(-40%) rotate(${direction}deg)`; // 🔄 왼쪽/오른쪽 번갈아 기울이기
+        count += 1;
+        innerLooper(); //재귀호출
+      }, 1);
+    }
+    innerLooper();
+  }
+
+  let isWorking = false;
+  function goStart() {
+    if (isWorking) return;
+    isWorking = true;
+
+    const winnerMother = document.getElementById("winner");
+    winnerMother.children[0].remove(); //기존에 있던 데이터는 삭제합니다
+    const button = document.getElementById("right-floating-btn");
+    button.disabled = true; //버튼 비활성화
+    button.style.pointerEvents = "none"; //버튼 비활성화
+    button.textContent = "진행 중"; //버튼 비활성화
+
+    buildDevideArray(exceptArray);
+    buildDataArray();
+    runCircle(() => {
+      let { first } = data[0];
+      let cnt = 0;
+      while (first > goalDegree) {
+        first -= degree;
+        cnt += 1;
+      }
+
+      let result = null;
+      data.forEach((item) => {
+        let findFirst = item.first - degree * cnt;
+        let findLast = item.last - degree * cnt;
+        if (findFirst < goalDegree && goalDegree < findLast) {
+          result = item;
+        }
+      });
+      isWorking = false;
+      if (!result) {
+        console.log("result", result);
+        console.log("data", data);
+        console.log("first", first);
+        console.log("cnt", cnt);
+      }
+      if (result.text) {
+        const newChild = document.createElement("div");
+        newChild.textContent = `${result.text}번, `;
+        document.getElementById("result").appendChild(newChild);
+        document.getElementById("total-size").textContent = `${
+          document.getElementById("result").childNodes.length
+        }개`;
+        const exceptDataIndex = Number(result.text) - 1;
+        exceptArray.push(exceptDataIndex); //제외할 숫자에 추가합니다
+        const winnerMother = document.getElementById("winner");
+        const winnerChild = document.createElement("div");
+        const winnerTitle = document.createElement("div");
+        const winerText = document.createElement("div");
+        winnerTitle.textContent = "당첨";
+        winerText.textContent = `${result.text}번`;
+        winnerChild.classList.add("winner-text");
+        winnerTitle.classList.add("winner-text-title");
+        winerText.classList.add("winner-text-number");
+        winnerChild.appendChild(winnerTitle);
+        winnerChild.appendChild(winerText);
+        winnerMother.appendChild(winnerChild);
+
+        setExceptDataForLocalStorage(exceptDataIndex);
+
+        setTimeout(() => {
+          winnerChild.remove();
+          const readyText = document.createElement("div");
+          readyText.textContent = "BUBAUM";
+          readyText.classList.add("ready-text");
+          winnerMother.appendChild(readyText);
+          button.disabled = false; //버튼 활성화
+          button.style.pointerEvents = "auto"; //버튼 활성화
+          button.textContent = "START"; //버튼 활성화
+          if (data.length != 0) {
+            goStart();
+          }
+        }, 3000);
+      }
+    });
+  }
+
+  function reset() {
+    if (!confirm("정말 초기화 하시겠습니까?")) return;
+    localStorage.removeItem("exceptData");
+    const exceptData = JSON.parse(localStorage.getItem("exceptData")) || [];
+    exceptArray.splice(0, exceptArray.length); //기존에 있던 데이터는 삭제합니다
+    buildDevideArray(exceptData);
+    buildDataArray();
+    drawing();
+    let preventLoop = 0;
+    const parent = document.getElementById("result");
+    while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+      preventLoop++;
+      if (preventLoop > 100) {
+        break;
+      }
+    }
+    console.log("preventLoop", preventLoop);
+    document.getElementById("total-size").textContent = "";
+    location.reload();
+  }
+
+  drawing();
+
+  /////반짝 원
+  function randomColor() {
+    const colors = [
+      "255, 255, 0",
+      "255, 165, 0",
+      "0, 255, 255",
+      "255, 0, 255",
+      "173, 216, 230",
+      "255, 192, 203",
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function createRandomLights(count) {
+    const container = document.body; // 조명을 추가할 부모 요소
+    for (let i = 0; i < count; i++) {
+      const light = document.createElement("div");
+      light.classList.add("light");
+
+      // 랜덤 위치 설정 (화면 전체)
+      const randomX = Math.random() * 99; // 0 ~ 100% (vw)
+      const randomY = Math.random() * 99; // 0 ~ 100% (vh)
+
+      // 랜덤 크기 설정 (40px ~ 100px)
+      const randomSize = Math.floor(Math.random() * 60) + 20;
+
+      // 랜덤 애니메이션 시작 시간 (0초 ~ 2초)
+      const randomDelay = Math.random() * 2;
+
+      const color = randomColor();
+      light.style.background = `radial-gradient(circle, rgba(${color}, 0.8) 10%, rgba(${color}, 0) 70%)`;
+
+      // 스타일 적용
+      light.style.left = `${randomX}%`;
+      light.style.top = `${randomY}%`;
+      light.style.width = `${randomSize}px`;
+      light.style.height = `${randomSize}px`;
+      light.style.animationDelay = `${randomDelay}s`; // 각 조명의 깜빡이는 타이밍을 다르게
+
+      container.appendChild(light);
+    }
+  }
+
+  // 10개의
+  createRandomLights(70);
+
+  function setExceptDataForLocalStorage(newItem) {
+    const exceptData = JSON.parse(localStorage.getItem("exceptData")) || [];
+    if (!exceptData.includes(newItem)) {
+      exceptData.push(newItem);
+      localStorage.setItem("exceptData", JSON.stringify(exceptData));
+    }
+  }
+
+  function getExceptDataFromLocalStorage() {
+    return JSON.parse(localStorage.getItem("exceptData")) || [];
+  }
+</script>

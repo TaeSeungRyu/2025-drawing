@@ -1,4 +1,4 @@
-# Vite + Three.js Project
+# Vite + Vanila Project
 
 This is a starter template for building lotto applications using [Vite](https://vitejs.dev/).
 
