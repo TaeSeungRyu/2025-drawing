@@ -70,7 +70,7 @@
         display: flex;
         flex-direction: column;
         border: 5px solid #ff9350;
-        box-shadow: 1px 1px 1px #ff751f;
+        box-shadow: 0px 0px 1px #ff751f;
         color: white;
         overflow: hidden;
       }
@@ -176,6 +176,12 @@
         font-weight: bold;
         text-transform: uppercase;
         animation: opaicityZeroToOne 2s ease-out forwards;
+        width: 200px;
+        height: 99px;
+        background-image: url("./logo.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        filter: brightness(3);
       }
       @keyframes opaicityZeroToOne {
         0% {
@@ -187,7 +193,7 @@
       }
       canvas {
         border-radius: 50%;
-        box-shadow: 1px 1px 35px rgba(255, 255, 255, 0.7);
+        box-shadow: 0px 0px 35px rgba(255, 255, 255, 0.7);
       }
       .footer {
         position: fixed;
@@ -207,6 +213,7 @@
         justify-content: space-between;
         border-radius: 10px;
         overflow: hidden;
+        box-shadow: 0px 0px 10px rgba(255, 117, 31, 0.7);
       }
       .right-floating-btn {
         display: flex;
@@ -216,7 +223,7 @@
         align-items: center;
         gap: 12px;
         border: none;
-        background: #ff751f;
+        background: rgb(255, 117, 31);
         color: var(--Background-White, #fff);
         font-size: 27px;
         font-style: normal;
@@ -245,6 +252,31 @@
         font-weight: 600;
         gap: 7.5px;
         cursor: pointer;
+      }
+
+      .light-bulb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 0, 0.2); /* 기본 꺼진 상태 */
+        box-shadow: 0 0 5px rgba(255, 255, 0, 0.2);
+        transition: background-color 0.3s, box-shadow 0.3s;
+      }
+
+      /* 전구가 반짝이는 효과 */
+      .light-bulb.on {
+        animation: flicker 1s infinite alternate;
+      }
+
+      @keyframes flicker {
+        0% {
+          background-color: rgba(255, 255, 0, 0.8);
+          box-shadow: 0 0 10px rgba(255, 255, 0, 0.8);
+        }
+        100% {
+          background-color: rgba(255, 165, 0, 1);
+          box-shadow: 0 0 15px rgba(255, 165, 0, 1);
+        }
       }
     </style>
   </head>
@@ -297,8 +329,40 @@
       <div id="arrow">↓</div>
       <canvas id="myCanvas" width="1000px" height="1000px"></canvas>
       <div id="winner" class="current-winning">
-        <div class="ready-text">BUBAUM</div>
+        <div class="ready-text"></div>
       </div>
+      <div
+        class="light-bulb"
+        style="position: absolute; left: 42.5%; top: 50.5%"
+      ></div>
+      <div
+        class="light-bulb"
+        style="position: absolute; right: 42.5%; top: 50.5%"
+      ></div>
+      <div
+        class="light-bulb"
+        style="position: absolute; right: 49.5%; top: 39%"
+      ></div>
+      <div
+        class="light-bulb"
+        style="position: absolute; right: 49.5%; bottom: 35%"
+      ></div>
+      <div
+        class="light-bulb"
+        style="position: absolute; right: 44.75%; bottom: 39%"
+      ></div>
+      <div
+        class="light-bulb"
+        style="position: absolute; left: 44.75%; bottom: 39%"
+      ></div>
+      <div
+        class="light-bulb"
+        style="position: absolute; left: 44.75%; top: 42%"
+      ></div>
+      <div
+        class="light-bulb"
+        style="position: absolute; right: 44.75%; top: 42%"
+      ></div>
     </div>
 
     <!-- <script src="./main.js"></script> -->
@@ -308,6 +372,22 @@
   </body>
 </html>
 <script>
+  let lightsOn = false;
+
+  function toggleLights() {
+    const bulbs = document.querySelectorAll(".light-bulb");
+    lightsOn = !lightsOn;
+
+    bulbs.forEach((bulb, index) => {
+      if (lightsOn) {
+        setTimeout(() => bulb.classList.add("on"), index * 150); // 순차적으로 켜짐
+      } else {
+        setTimeout(() => bulb.classList.remove("on"), index * 150); // 순차적으로 꺼짐
+      }
+    });
+  }
+
+  toggleLights();
   const canvas = document.getElementById("myCanvas");
   const ctx = canvas.getContext("2d");
   let arrow = document.getElementById("arrow");
@@ -600,7 +680,7 @@
         setTimeout(() => {
           winnerChild.remove();
           const readyText = document.createElement("div");
-          readyText.textContent = "BUBAUM";
+          readyText.textContent = "";
           readyText.classList.add("ready-text");
           winnerMother.appendChild(readyText);
           button.disabled = false; //버튼 활성화
