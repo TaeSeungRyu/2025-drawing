@@ -701,22 +701,6 @@
   function reset() {
     if (!confirm("정말 초기화 하시겠습니까?")) return;
     localStorage.removeItem("exceptData");
-    const exceptData = JSON.parse(localStorage.getItem("exceptData")) || [];
-    exceptArray.splice(0, exceptArray.length); //기존에 있던 데이터는 삭제합니다
-    buildDevideArray(exceptData);
-    buildDataArray();
-    drawing();
-    let preventLoop = 0;
-    const parent = document.getElementById("result");
-    while (parent.firstChild) {
-      parent.removeChild(parent.firstChild);
-      preventLoop++;
-      if (preventLoop > 100) {
-        break;
-      }
-    }
-    console.log("preventLoop", preventLoop);
-    document.getElementById("total-size").textContent = "";
     location.reload();
   }
 

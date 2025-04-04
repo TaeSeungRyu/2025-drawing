@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tag Cloud Animation</title>
+    <style>
+      @font-face {
+        font-family: "Pretendard";
+        src: url("./Pretendard.ttf") format("truetype"); /* TTF */
+        font-weight: 400;
+        font-display: swap;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background-color: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        overflow: hidden;
+        user-select: none;
+        font-family: "Pretendard", sans-serif;
+      }
+      .tag {
+        position: absolute;
+        color: white;
+        font-size: 20px;
+        opacity: 1;
+        font-weight: bold;
+        transition: all 3s ease-in-out;
+      }
+      .active {
+        transform: translate(-50%, -50%) scale(5);
+        opacity: 1;
+      }
+      .inactive {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+
+      .controls {
+        position: fixed;
+        top: 20px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn-box {
+        position: fixed;
+        z-index: 2;
+        right: 45px;
+        bottom: 40px;
+        width: 400px;
+        height: 80px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0px 0px 10px rgba(255, 117, 31, 0.7);
+      }
+
+      .reset-button {
+        cursor: pointer;
+        font-size: 27px;
+        font-style: normal;
+        font-weight: 700;
+        flex: 1;
+        height: 100%;
+      }
+      .generate-button {
+        z-index: 44;
+        right: 45px;
+        border: none;
+        background: rgb(255, 117, 31);
+        color: var(--Background-White, #fff);
+        cursor: pointer;
+        font-size: 27px;
+        font-style: normal;
+        font-weight: 700;
+        flex: 1;
+        height: 100%;
+      }
+      .generate-button:active {
+        background: rgb(255, 117, 31, 0.8);
+      }
+      .generate-button:disabled {
+        background: rgb(255, 117, 31, 0.5);
+        cursor: not-allowed;
+      }
+
+      .input-result {
+        width: 383px;
+        height: fit-content;
+        position: absolute;
+        z-index: 44;
+        left: 49px;
+        top: 32px;
+        min-height: 50px;
+        border-radius: 30px;
+        display: flex;
+        flex-direction: column;
+        border: 5px solid #ff9350;
+        box-shadow: 0px 0px 1px #ff751f;
+        color: white;
+        overflow: hidden;
+      }
+      .input-result-head {
+        background: #ff751f;
+        padding: 22px 40px;
+        font-size: 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .input-result-body {
+        padding: 22px 40px;
+        font-size: 32px;
+        padding: 30px 40px;
+        min-height: 100px;
+        background: black;
+      }
+      .result-item {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        font-size: 32px;
+        color: #fff;
+        justify-content: space-between;
+        align-items: center;
+        gap: 4px;
+      }
+      .result-item div {
+        width: fit-content;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="input-result">
+      <div class="input-result-head">
+        <div>TOTAL</div>
+        <small id="total-size"></small>
+      </div>
+      <div class="input-result-body">
+        <div class="result-item" id="result"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="btn-box">
+        <button class="reset-button" type="button" onclick="reset()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="27"
+            height="26"
+            viewBox="0 0 27 26"
+            fill="none"
+          >
+            <path
+              d="M4.30269 16.2392C5.00517 18.233 6.33662 19.9444 8.09642 21.1157C9.85623 22.287 11.9491 22.8547 14.0596 22.7332C16.1701 22.6118 18.184 21.8077 19.7978 20.4423C21.4116 19.0769 22.5378 17.224 23.0069 15.1628C23.476 13.1016 23.2625 10.9439 22.3985 9.0146C21.5345 7.08534 20.0669 5.4891 18.2167 4.4664C16.3666 3.4437 14.2342 3.04994 12.1408 3.34445C8.6065 3.84168 6.27142 6.40339 3.75 8.66602M3.75 8.66602V2.16602M3.75 8.66602H10.25"
+              stroke="#5B5B5B"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <span>RESET</span>
+        </button>
+        <button
+          class="generate-button"
+          id="runner-button"
+          onclick="runPickMePickMe()"
+        >
+          추첨 시작
+        </button>
+      </div>
+    </div>
+    <div id="tag-cloud"></div>
+
+    <script>
+      const tagCloud = document.getElementById("tag-cloud");
+      const resultId = document.getElementById("result");
+      const totalSizeId = document.getElementById("total-size");
+      const runButtonId = document.getElementById("runner-button");
+      let animationId;
+      let isFirstMounted = true;
+      let isRunning = false;
+
+      const wordsArrayCount = 130; // Default number of tags
+      let wordsArray = [];
+      for (let i = 0; i < wordsArrayCount; i++) {
+        wordsArray.push({ key: i, value: `${i + 1}` });
+      }
+
+      function initializeTags() {
+        tagCloud.innerHTML = "";
+        const exceptList = getExceptDataFromLocalStorage();
+        wordsArray.forEach((word) => {
+          if (!exceptList.includes(word.value)) {
+            const tag = document.createElement("div");
+            tag.classList.add("tag");
+            tag.innerText = word.value;
+            tagCloud.appendChild(tag);
+            tag.style.left = `50vw`;
+            tag.style.top = `50vh`;
+            tag.style.fontSize = `${Math.random() * 20 + 18}px`;
+          }
+        });
+        moveTagsSmoothly();
+      }
+
+      function moveTagsSmoothly() {
+        const tags = document.querySelectorAll(".tag");
+        tags.forEach((tag) => {
+          const randomX = Math.random() * 100 - 50;
+          const randomY = Math.random() * 100 - 50;
+          tag.style.left = `${50 + randomX}vw`;
+          tag.style.top = `${50 + randomY}vh`;
+        });
+      }
+
+      function animateTags() {
+        const tags = document.querySelectorAll(".tag");
+        function moveTagsContinuously() {
+          tags.forEach((tag) => {
+            const randomX = Math.random() * 200 - 100;
+            const randomY = Math.random() * 200 - 100;
+            const currentLeft = parseFloat(tag.style.left);
+            const currentTop = parseFloat(tag.style.top);
+            tag.style.left = `${currentLeft + randomX}vw`;
+            tag.style.top = `${currentTop + randomY}vh`;
+          });
+          animationId = requestAnimationFrame(moveTagsContinuously);
+        }
+        moveTagsContinuously();
+      }
+
+      function initResultListDataView() {
+        totalSizeId.innerText = "";
+        let preventLoop = 0;
+        while (resultId.firstChild) {
+          resultId.removeChild(resultId.firstChild);
+          preventLoop++;
+          if (preventLoop > 100) {
+            break;
+          }
+        }
+        const storageList = getExceptDataFromLocalStorage();
+        if (storageList) {
+          storageList.forEach((item) => {
+            const resultItem = document.createElement("div");
+            resultItem.innerText = `${item}번`;
+            resultId.appendChild(resultItem);
+          });
+          if (storageList.length > 0) {
+            totalSizeId.innerText = `${storageList.length}개`;
+          }
+        }
+      }
+
+      initializeTags();
+      initResultListDataView();
+      function runPickMePickMe() {
+        if (isRunning) return;
+        if (!isFirstMounted) {
+          initializeTags();
+        }
+        runButtonId.disabled = true;
+        runButtonId.innerText = "추첨 진행 중";
+        isFirstMounted = false;
+        isRunning = true;
+        animateTags();
+        setTimeout(() => {
+          const tags = document.querySelectorAll(".tag");
+          const activeTag = tags[Math.floor(Math.random() * tags.length)];
+          tags.forEach((tag) => {
+            if (tag !== activeTag) {
+              tag.classList.add("inactive");
+              tag.classList.remove("active");
+            }
+          });
+          cancelAnimationFrame(animationId);
+          activeTag.classList.add("active");
+          activeTag.style.left = "50%";
+          activeTag.style.top = "50%";
+          activeTag.style.transform = "translate(-50%, -50%) scale(5)";
+          setTimeout(() => {
+            setExceptDataForLocalStorage(activeTag.innerText).then(() => {
+              initResultListDataView();
+              runButtonId.disabled = false;
+              isRunning = false;
+              runButtonId.innerText = "추첨 시작";
+            });
+          }, 1000);
+        }, 3000);
+      }
+
+      //로컬 스토리지에 데이터 저장하는 함수
+      function setExceptDataForLocalStorage(newItem) {
+        return new Promise((resolve) => {
+          const exceptData =
+            JSON.parse(localStorage.getItem("exceptData")) || [];
+          if (!exceptData.includes(newItem)) {
+            exceptData.push(newItem);
+            localStorage.setItem("exceptData", JSON.stringify(exceptData));
+            wordsArray = wordsArray.filter((item) => item.value !== newItem);
+          }
+          resolve(true);
+        });
+      }
+      //로컬 스토리지에서 데이터 가져오는 함수
+      function getExceptDataFromLocalStorage() {
+        return JSON.parse(localStorage.getItem("exceptData")) || [];
+      }
+
+      function reset() {
+        if (!confirm("정말 초기화 하시겠습니까?")) return;
+        localStorage.removeItem("exceptData");
+        location.reload();
+      }
+    </script>
+  </body>
+</html>
