@@ -135,9 +135,37 @@
       .result-item div {
         width: fit-content;
       }
+      .logo {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 60px;
+        user-select: none;
+        font-weight: bold;
+        text-transform: uppercase;
+        animation: opaicityZeroToOne 2s ease-out forwards;
+        width: 200px;
+        height: 99px;
+        background-image: url("./logo.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        filter: brightness(3);
+        z-index: 20;
+      }
+      @keyframes opaicityZeroToOne {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
     </style>
   </head>
   <body>
+    <div id="logo" class="logo"></div>
+
     <div class="input-result">
       <div class="input-result-head">
         <div>TOTAL</div>
@@ -179,6 +207,7 @@
     <div id="tag-cloud"></div>
 
     <script>
+      const logoId = document.getElementById("logo");
       const tagCloud = document.getElementById("tag-cloud");
       const resultId = document.getElementById("result");
       const totalSizeId = document.getElementById("total-size");
@@ -268,6 +297,7 @@
         }
         runButtonId.disabled = true;
         runButtonId.innerText = "추첨 진행 중";
+        logoId.style.display = "none";
         isFirstMounted = false;
         isRunning = true;
         animateTags();
@@ -291,8 +321,10 @@
               runButtonId.disabled = false;
               isRunning = false;
               runButtonId.innerText = "추첨 시작";
+              logoId.style.display = "block";
+              logoId.style.top = "39%";
             });
-          }, 1000);
+          }, 2000);
         }, 3000);
       }
 
