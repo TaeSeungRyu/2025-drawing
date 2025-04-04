@@ -31,7 +31,27 @@
         opacity: 1;
         font-weight: bold;
         transition: all 3s ease-in-out;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: inset -10px -10px 20px rgba(0, 0, 0, 0.2),
+          /* 내부 그림자 */ inset 5px 5px 10px rgba(255, 255, 255, 0.3),
+          /* 내부 밝기 */ 0 8px 15px rgba(0, 0, 0, 0.3);
+        background: radial-gradient(circle at 30% 30%, #fff, #888);
+        backdrop-filter: blur(1px);
+        animation: rotateBall 8s infinite linear;
+        transform-style: preserve-3d;
       }
+      @keyframes rotateBall {
+        0% {
+          transform: rotateX(0deg) rotateY(0deg);
+        }
+        100% {
+          transform: rotateX(3deg) rotateY(3deg);
+        }
+      }
+
       .active {
         transform: translate(-50%, -50%) scale(5);
         opacity: 1;
@@ -225,6 +245,13 @@
       function initializeTags() {
         tagCloud.innerHTML = "";
         const exceptList = getExceptDataFromLocalStorage();
+        const ballBackgroundStyleList = [
+          "radial-gradient(circle at 30% 30%, #fff9c4, #fbc02d)",
+          "radial-gradient(circle at 30% 30%, #e0e0e0, #616161)",
+          "radial-gradient(circle at 30% 30%, #00f0ff, #001f33)",
+          "radial-gradient(circle at 30% 30%, #ffccbc, #d32f2f)",
+          "radial-gradient(circle at 30% 30%, #c8e6c9, #388e3c)",
+        ];
         wordsArray.forEach((word) => {
           if (!exceptList.includes(word.value)) {
             const tag = document.createElement("div");
@@ -233,7 +260,23 @@
             tagCloud.appendChild(tag);
             tag.style.left = `50vw`;
             tag.style.top = `50vh`;
-            tag.style.fontSize = `${Math.random() * 20 + 18}px`;
+            const size = Math.random() * 20 + 18;
+            tag.style.fontSize = `${size}px`;
+            tag.style.width = `${size * 1.85}px`;
+            tag.style.height = `${size * 1.85}px`;
+            tag.style.background =
+              ballBackgroundStyleList[
+                Math.floor(Math.random() * ballBackgroundStyleList.length)
+              ];
+
+            const duration = (Math.random() * 6 + 6).toFixed(2);
+            // 랜덤 시작 각도 (0~360도)
+            const startDeg = Math.floor(Math.random() * 360);
+            tag.style.transform = `rotate(${startDeg}deg)`;
+            // 랜덤 방향
+            const direction = Math.random() > 0.5 ? "normal" : "reverse";
+            // 애니메이션 적용
+            tag.style.animation = `rotateBall ${duration}s infinite linear ${direction}`;
           }
         });
         moveTagsSmoothly();
@@ -253,10 +296,27 @@
         const tags = document.querySelectorAll(".tag");
         function moveTagsContinuously() {
           tags.forEach((tag) => {
-            const randomX = Math.random() * 200 - 100;
-            const randomY = Math.random() * 200 - 100;
-            const currentLeft = parseFloat(tag.style.left);
-            const currentTop = parseFloat(tag.style.top);
+            let randomX = Math.random() * 200 - 100;
+            let randomY = Math.random() * 200 - 100;
+            let currentLeft = parseFloat(tag.style.left);
+            let currentTop = parseFloat(tag.style.top);
+
+            while (true) {
+              if (
+                currentLeft + randomX < -400 ||
+                currentLeft + randomX > 2000
+              ) {
+                randomX = Math.random() * 200 - 100;
+              } else if (
+                currentTop + randomY < -400 ||
+                currentTop + randomY > 2000
+              ) {
+                randomY = Math.random() * 200 - 100;
+              } else {
+                break;
+              }
+            }
+
             tag.style.left = `${currentLeft + randomX}vw`;
             tag.style.top = `${currentTop + randomY}vh`;
           });
@@ -301,31 +361,32 @@
         isFirstMounted = false;
         isRunning = true;
         animateTags();
+      }
+
+      function stopPickMePickMe() {
+        const tags = document.querySelectorAll(".tag");
+        const activeTag = tags[Math.floor(Math.random() * tags.length)];
+        tags.forEach((tag) => {
+          if (tag !== activeTag) {
+            tag.classList.add("inactive");
+            tag.classList.remove("active");
+          }
+        });
+        cancelAnimationFrame(animationId);
+        activeTag.classList.add("active");
+        activeTag.style.left = "50%";
+        activeTag.style.top = "50%";
+        activeTag.style.transform = "translate(-50%, -50%) scale(5)";
         setTimeout(() => {
-          const tags = document.querySelectorAll(".tag");
-          const activeTag = tags[Math.floor(Math.random() * tags.length)];
-          tags.forEach((tag) => {
-            if (tag !== activeTag) {
-              tag.classList.add("inactive");
-              tag.classList.remove("active");
-            }
+          setExceptDataForLocalStorage(activeTag.innerText).then(() => {
+            initResultListDataView();
+            runButtonId.disabled = false;
+            isRunning = false;
+            runButtonId.innerText = "추첨 시작";
+            logoId.style.display = "block";
+            logoId.style.top = "25%";
           });
-          cancelAnimationFrame(animationId);
-          activeTag.classList.add("active");
-          activeTag.style.left = "50%";
-          activeTag.style.top = "50%";
-          activeTag.style.transform = "translate(-50%, -50%) scale(5)";
-          setTimeout(() => {
-            setExceptDataForLocalStorage(activeTag.innerText).then(() => {
-              initResultListDataView();
-              runButtonId.disabled = false;
-              isRunning = false;
-              runButtonId.innerText = "추첨 시작";
-              logoId.style.display = "block";
-              logoId.style.top = "39%";
-            });
-          }, 2000);
-        }, 3000);
+        }, 2000);
       }
 
       //로컬 스토리지에 데이터 저장하는 함수
@@ -351,6 +412,15 @@
         localStorage.removeItem("exceptData");
         location.reload();
       }
+      window.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          if (isRunning) {
+            stopPickMePickMe();
+          } else {
+            runPickMePickMe();
+          }
+        }
+      });
     </script>
   </body>
 </html>
