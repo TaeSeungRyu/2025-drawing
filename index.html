@@ -36,9 +36,9 @@
         font-weight: 900;
         color: white;
         position: absolute;
-        top: 15px;
+        top: -37px;
         left: 50%;
-        transform: translateX(-40%);
+        transform: translateX(-20%);
         user-select: none;
       }
 
@@ -151,7 +151,6 @@
         font-weight: 600;
         line-height: normal;
       }
-
       @keyframes textEffect {
         0% {
           scale: 1;
@@ -326,8 +325,11 @@
         </div>
       </div>
       <br />
-      <div id="arrow">↓</div>
-      <canvas id="myCanvas" width="1000px" height="1000px"></canvas>
+      <div style="position: relative">
+        <div id="arrow">↓</div>
+        <canvas id="myCanvas" width="1000px" height="1000px"></canvas>
+      </div>
+
       <div id="winner" class="current-winning">
         <div class="ready-text"></div>
       </div>
@@ -585,17 +587,15 @@
     while (!runBeforeCheck()) {
       randomNum = getRandomNumberBetween(360, 600); //멈출 횟수를 정합니다
       breaker++;
-      if (breaker > 1200) {
+      if (breaker > 6000) {
         console.log("무한루프 발생");
         break;
       }
     }
-    console.log(runBeforeCheck());
-
     function innerLooper() {
       if (count > randomNum) {
         arrow.style.transition = "transform 0.6s ease-out"; // 멈출 때 부드럽게 복귀
-        arrow.style.transform = "translateX(-40%) rotate(0deg)";
+        arrow.style.transform = "translateX(-20%) rotate(0deg)";
         if (calback) calback(randomNum); //다 돌면 콜백 함수를 호출 합니다
         return;
       }
@@ -608,7 +608,7 @@
         let tilt = getRandomNumberBetween(5, 10); // 기울기 정도 키움
         let direction = -tilt; // 좌우로 흔들리게 함
         arrow.style.transform = `transform 2.5s ease-out`;
-        arrow.style.transform = `translateX(-40%) rotate(${direction}deg)`; // 🔄 왼쪽/오른쪽 번갈아 기울이기
+        arrow.style.transform = `translateX(-20%) rotate(${direction}deg)`; // 🔄 왼쪽/오른쪽 번갈아 기울이기
         count += 1;
         innerLooper(); //재귀호출
       }, 1);
@@ -640,9 +640,12 @@
 
       let result = null;
       data.forEach((item) => {
-        let findFirst = item.first - degree * cnt;
-        let findLast = item.last - degree * cnt;
-        if (findFirst < goalDegree && goalDegree < findLast) {
+        let findFirst = Math.round(item.first - degree * cnt);
+        let findLast = Math.round(item.last - degree * cnt);
+        if (
+          findFirst <= Math.round(goalDegree) &&
+          Math.round(goalDegree) <= findLast
+        ) {
           result = item;
         }
       });
@@ -652,6 +655,7 @@
         console.log("data", data);
         console.log("first", first);
         console.log("cnt", cnt);
+        showToast("시스템 연산에 문제가 발생했습니다. 다시 시도해주세요.");
       }
       if (result.text) {
         const newChild = document.createElement("div");
@@ -686,6 +690,9 @@
           button.disabled = false; //버튼 활성화
           button.style.pointerEvents = "auto"; //버튼 활성화
           button.textContent = "START"; //버튼 활성화
+          if (data.length != 0) {
+            goStart();
+          }
         }, 3000);
       }
     });
@@ -728,6 +735,7 @@
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
+  // 랜덤 조명 생성 함수
   function createRandomLights(count) {
     const container = document.body; // 조명을 추가할 부모 요소
     for (let i = 0; i < count; i++) {
@@ -761,6 +769,7 @@
   // 10개의
   createRandomLights(70);
 
+  //로컬 스토리지에 데이터 저장하는 함수
   function setExceptDataForLocalStorage(newItem) {
     const exceptData = JSON.parse(localStorage.getItem("exceptData")) || [];
     if (!exceptData.includes(newItem)) {
@@ -768,8 +777,49 @@
       localStorage.setItem("exceptData", JSON.stringify(exceptData));
     }
   }
-
+  //로컬 스토리지에서 데이터 가져오는 함수
   function getExceptDataFromLocalStorage() {
     return JSON.parse(localStorage.getItem("exceptData")) || [];
+  }
+
+  const toastContainer = document.createElement("div");
+  toastContainer.style.position = "fixed";
+  toastContainer.style.bottom = "20px";
+  toastContainer.style.left = "50%";
+  toastContainer.style.transform = "translateX(-50%)";
+  toastContainer.style.zIndex = "9999";
+  toastContainer.style.display = "flex";
+  toastContainer.style.flexDirection = "column";
+  toastContainer.style.gap = "10px";
+  document.body.appendChild(toastContainer);
+
+  // 토스트 메시지 생성 함수
+  function showToast(message, duration = 2500) {
+    const toast = document.createElement("div");
+    toast.textContent = message;
+    toast.style.padding = "12px 20px";
+    toast.style.background = "rgb(252 86 86)";
+    toast.style.color = "#fff";
+    toast.style.borderRadius = "6px";
+    toast.style.boxShadow = "rgba(255, 255, 255, 0.8) 0px 0px 20px";
+    toast.style.opacity = "0";
+    toast.style.fontSize = "18px";
+    toast.style.transition = "opacity 0.3s ease-in-out";
+
+    // 토스트 컨테이너에 추가
+    toastContainer.appendChild(toast);
+
+    // 애니메이션 적용
+    setTimeout(() => {
+      toast.style.opacity = "1";
+    }, 100);
+
+    // // 지정된 시간 후 삭제
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => {
+        toast.remove();
+      }, 300); // 페이드아웃 시간
+    }, duration);
   }
 </script>
