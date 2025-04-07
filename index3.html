@@ -14,7 +14,7 @@
           transform: scale(1);
         }
       }
-      @keyframes zoomIn {
+      @keyframes finalAnimation {
         0% {
           opacity: 0;
           transform: scale(0.3) rotate(-10deg);
@@ -170,7 +170,7 @@
         position: absolute;
       }
       .slot-item.final {
-        animation: zoomIn 0.5s ease-out forwards;
+        animation: finalAnimation 0.5s ease-out forwards;
         text-shadow: 0 0 5px #00c3ff, 0 0 10px #00f0ff, 0 0 20px #00f0ff;
         animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1); /*리치하게 */
       }
@@ -309,9 +309,10 @@
       const giftContainer = document.getElementById("gift-container"); // 상품 리스트
       const slot = document.getElementById("slot"); // 메인 슬롯(주 에니메이션 영역)
       let rolling = false; // 숫자가 돌아가는지 여부
+      let isStopping = false; // 멈춤 액션이 끝났는지 여부
       let currentTimeout = null; // 현재 타이머(숫자가 돌아가는)
       let currentSpeed = 500; // 현재 속도(숫자가 돌아가는 속도)
-      const wordsArrayCount = 5; //추첨 개수
+      const wordsArrayCount = 92; //추첨 개수
       const wordsArray = []; // 추첨 개수에 맞는 배열 생성
       const endedNumberArray = []; // 이미 당첨된 번호를 저장하는 배열
 
@@ -477,6 +478,8 @@
 
       function stopRolling() {
         try {
+          if (isStopping) return; // 멈추는 중이면 리턴
+          isStopping = true; // 멈추는 중으로 설정
           clearTimeout(currentTimeout);
           let itemKey = Math.floor(Math.random() * wordsArrayCount);
           let preventLoop = 0;
@@ -507,7 +510,13 @@
           console.error("Error in stopRolling:", error);
           showToast("오류가 발생했습니다. 다시 시도해주세요.");
         } finally {
-          rolling = false;
+          giftBoxes.forEach((item) => {
+            item.selected = false; // 선택된 상태 초기화
+          });
+          setTimeout(() => {
+            rolling = false;
+            isStopping = false; // 멈춤 액션이 끝났음을 표시
+          }, 300);
         }
       }
 
