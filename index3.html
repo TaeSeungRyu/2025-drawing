@@ -49,7 +49,20 @@
           transform: rotate(360deg);
         }
       }
-
+      @keyframes popFade {
+        0% {
+          transform: translate(-50%, -50%) scale(0.5) rotate(-5deg);
+          opacity: 0;
+        }
+        30% {
+          transform: translate(-50%, -50%) scale(1.3) rotate(3deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1) rotate(0deg);
+          opacity: 1;
+        }
+      }
       @font-face {
         font-family: "Pretendard";
         src: url("./Pretendard.ttf") format("truetype"); /* TTF */
@@ -65,6 +78,7 @@
         overflow: hidden;
         user-select: none;
       }
+      /** 전체 메인 컨테이너 **/
       .item-container {
         display: flex;
         justify-content: center;
@@ -74,7 +88,8 @@
         padding-left: 0.5%;
         padding-right: 0.5%;
       }
-      .flex-1 {
+      /** 아이템 좌측과 우측 공통 class **/
+      .item {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -84,7 +99,9 @@
         border-radius: 10px;
         overflow: hidden;
       }
-      .target-list {
+
+      /** 좌측 리스트 **/
+      .left {
         box-shadow: 0 0 4px #000;
         border-radius: 10px;
         color: rgb(0, 128, 233);
@@ -96,7 +113,9 @@
         border: none;
         flex-direction: column;
       }
-      #gift-container {
+
+      /** 좌측 당첨 현황 class 시작 --- **/
+      .gift-container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         padding-top: 20px;
@@ -118,15 +137,18 @@
         background: rgb(219, 219, 219);
         color: rgb(0, 128, 233);
       }
-      .selected {
-        background: rgb(0, 128, 233) !important;
-        color: white;
-      }
+
       .selected-completed {
         border: 1px solid rgb(0, 128, 233) !important;
         background: white !important;
         color: rgb(0, 128, 233) !important;
       }
+      .selected {
+        background: rgb(0, 128, 233) !important;
+        color: white !important;
+      }
+
+      /** 우측 슬롯 시작 ---- **/
       .slot {
         border: none;
         font-size: 18rem;
@@ -150,14 +172,10 @@
       .slot-item.final {
         animation: zoomIn 0.5s ease-out forwards;
         text-shadow: 0 0 5px #00c3ff, 0 0 10px #00f0ff, 0 0 20px #00f0ff;
-
-        animation-timing-function: cubic-bezier(
-          0.19,
-          1,
-          0.22,
-          1
-        ); /* 좀 더 리치한 느낌 */
+        animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1); /*리치하게 */
       }
+
+      /** 우측 페이지 첫 진입시 회사 로고 뷰 **/
       .before-start {
         position: absolute;
         top: 0;
@@ -173,6 +191,8 @@
         animation: fadeIn 0.2s ease-out forwards;
         background: rgba(0, 0, 0, 0.5);
       }
+
+      /** 푸터 **/
       .footer {
         position: fixed;
         bottom: 15px;
@@ -180,16 +200,15 @@
         color: rgb(143, 143, 143);
         z-index: 5;
       }
+
+      /** 축하용 상단에서 떨어지는 효과 **/
       .confetti-shape.circle {
         border-radius: 50%;
         animation: confettiRotate 1.5s linear forwards;
       }
-
       .confetti-shape.square {
-        /* 그대로 정사각형 */
         animation: confettiRotate 1.5s linear forwards;
       }
-
       .confetti-shape.triangle {
         width: 0;
         height: 0;
@@ -198,20 +217,19 @@
         border-bottom: 12px solid;
         background: none !important;
       }
-
       .confetti-shape.star::before {
         content: "★";
         font-size: 14px;
         display: block;
         color: inherit;
       }
-
       .confetti-shape.star {
         width: 14px;
         height: 14px;
         background: none !important;
       }
 
+      /** 축하 메시지 **/
       .congrats-message {
         position: absolute;
         top: 40%;
@@ -226,28 +244,12 @@
         z-index: 100;
         transition: all 0.5s ease-out;
       }
-
       .congrats-message.show {
         opacity: 1;
         transform: translate(-50%, -50%) scale(1.2) rotate(1deg);
         animation: popFade 1.2s ease-out forwards;
       }
-
-      @keyframes popFade {
-        0% {
-          transform: translate(-50%, -50%) scale(0.5) rotate(-5deg);
-          opacity: 0;
-        }
-        30% {
-          transform: translate(-50%, -50%) scale(1.3) rotate(3deg);
-          opacity: 1;
-        }
-        100% {
-          transform: translate(-50%, -50%) scale(1) rotate(0deg);
-          opacity: 1;
-        }
-      }
-
+      /** 토스트 메시지 **/
       .toast-container {
         position: fixed;
         bottom: 20px;
@@ -268,13 +270,13 @@
     </div>
 
     <div class="item-container">
-      <div class="flex-1 target-list" style="flex: 1">
+      <div class="item left" style="flex: 1">
         <div style="padding-top: 30px; font-weight: bold; font-size: 30px">
           2025 BU바움 그룹 워크샵 경품 추첨
         </div>
-        <div id="gift-container"></div>
+        <div class="gift-container" id="gift-container"></div>
       </div>
-      <div class="flex-1" style="flex: 2">
+      <div class="item" style="flex: 2">
         <div class="before-start">BU바움</div>
         <div class="slot" id="slot"></div>
       </div>
@@ -283,18 +285,26 @@
       Created by Fintech team Front Engineer &middot; All rights reserved
     </div>
     <script>
-      const toastContainer = document.getElementById("toast-container");
-      const beforeStart = document.querySelector(".before-start");
-      const giftContainer = document.getElementById("gift-container");
-      const slot = document.getElementById("slot");
-      let rolling = false;
+      /**
+            1. 아이템을 선택 후 엔터키로 시작, 종료 합니다.
+            2. 사용자가 선택을 하지 않으면 동작 하지 않습니다.
+            3. 사용자가 엔터키를 눌러야 멈춥니다.
+            4. 한번 추첨한 번호는 제외됩니다.
+            5. 추첨한 아이템은 다시 선택해서 재 추첨 할 수 있습니다.
+            -> 사용자가 안나올 경우를 대비하여
+      */
+      const toastContainer = document.getElementById("toast-container"); // 토스트 메시지 컨테이너
+      const beforeStart = document.querySelector(".before-start"); // 시작 전 로고
+      const giftContainer = document.getElementById("gift-container"); // 상품 리스트
+      const slot = document.getElementById("slot"); // 메인 슬롯(주 에니메이션 영역)
+      let rolling = false; // 숫자가 돌아가는지 여부
+      let currentTimeout = null; // 현재 타이머(숫자가 돌아가는)
+      let currentSpeed = 500; // 현재 속도(숫자가 돌아가는 속도)
+      const wordsArrayCount = 4; //추첨 개수
+      const wordsArray = []; // 추첨 개수에 맞는 배열 생성
+      const endedNumberArray = []; // 이미 당첨된 번호를 저장하는 배열
 
-      const wordsArrayCount = 120;
-      const wordsArray = Array.from({ length: wordsArrayCount }, (_, i) => ({
-        key: i,
-        value: `${i + 1}`,
-      }));
-
+      //선물 입니다(name : 이름, value : 배열의 인덱스, selected : 선택 여부, isEnd : 당첨 여부)
       const giftBoxes = [
         { name: "닌텐도 스위치", selected: false, value: -1, isEnd: false },
         { name: "소니 무선헤드셋", selected: false, value: -1, isEnd: false },
@@ -361,11 +371,12 @@
         },
       ];
 
+      // 단어 배열을 초기화하는 함수 입니다.
       function buildWordsArray() {
-        wordsArray.splice(0, wordsArray.length); // Clear existing items
+        wordsArray.splice(0, wordsArray.length);
         for (let i = 0; i < wordsArrayCount; i++) {
-          const isEnded = giftBoxes.find((item) => item.value === i);
-          if (!isEnded) {
+          const isEnded = endedNumberArray.find((number) => number === i);
+          if (isEnded == undefined) {
             wordsArray.push({
               key: i,
               value: `${i + 1}`,
@@ -374,47 +385,40 @@
         }
       }
 
+      //좌측 상품 리스트를 그리는 함수 입니다.
       function buildGiftContainerItem() {
-        giftContainer.innerHTML = ""; // Clear existing items
+        giftContainer.innerHTML = ""; // Clear
         giftBoxes.forEach((item) => {
           const newChild = document.createElement("div");
           newChild.textContent = item.name;
+          newChild.classList.add("gift-item");
           if (item.special) {
-            newChild.classList.add("gift-item");
+            //특별한 아이템인 경우
             newChild.classList.add("special");
-          } else {
-            newChild.classList.add("gift-item");
           }
           if (item.selected) {
             newChild.classList.add("selected-completed");
           }
-          if (!item.isEnd) {
-            newChild.addEventListener("click", () => {
-              const childList = document.getElementsByClassName("gift-item");
-              if (rolling) return;
-              for (let i = 0; i < childList.length; i++) {
-                childList[i].classList.remove("selected");
-              }
-              //console.log(item);
-              if (!item.isEnd) {
-                if (item.selected) {
-                  item.selected = false;
-                  newChild.classList.remove("selected");
-                } else {
-                  item.selected = true;
-                  newChild.classList.add("selected");
-                }
-              }
-            });
-          } else {
+          newChild.addEventListener("click", () => {
+            const childList = document.getElementsByClassName("gift-item");
+            if (rolling) return;
+            for (let i = 0; i < childList.length; i++) {
+              childList[i].classList.remove("selected");
+            }
+            if (item.selected) {
+              item.selected = false;
+              newChild.classList.remove("selected");
+            } else {
+              item.selected = true;
+              newChild.classList.add("selected");
+            }
+          });
+          if (item.isEnd) {
             newChild.textContent = `${item.name} (${item.value + 1}번)`;
           }
           giftContainer.appendChild(newChild);
         });
       }
-
-      let currentTimeout = null;
-      let currentSpeed = 500;
 
       function clearSlot() {
         while (slot.firstChild) {
@@ -441,9 +445,7 @@
 
       function startRolling() {
         if (rolling) return;
-        const selectedItems = giftBoxes.filter(
-          (item) => item.selected && !item.isEnd
-        );
+        const selectedItems = giftBoxes.filter((item) => item.selected);
         if (selectedItems.length === 0) {
           showToast("상품을 선택하여 주세요.");
           return;
@@ -457,29 +459,28 @@
       function stopRolling() {
         rolling = false;
         clearTimeout(currentTimeout);
-        let index = Math.floor(Math.random() * wordsArrayCount);
+        let itemKey = Math.floor(Math.random() * wordsArrayCount);
         let preventLoop = 0;
-        let isEnded = wordsArray.find((item) => item.key === index);
-
-        while (!isEnded) {
-          index = Math.floor(Math.random() * wordsArrayCount);
-          isEnded = wordsArray.find((item) => item.key === index);
+        let isEnded = endedNumberArray.find((number) => number === itemKey);
+        while (isEnded != undefined) {
+          itemKey = Math.floor(Math.random() * wordsArrayCount);
+          isEnded = endedNumberArray.find((number) => number === itemKey);
           preventLoop++;
-          if (preventLoop > 100) {
+          if (preventLoop > 50000) {
             break;
           }
         }
-
         giftBoxes.forEach((item) => {
-          if (!item.isEnd && item.selected) {
-            item.value = index;
+          if (item.selected) {
+            item.value = itemKey;
             item.isEnd = true;
           }
         });
-
-        const finalWord = wordsArray.find((item) => item.key === index);
+        endedNumberArray.push(itemKey);
+        const finalWord = wordsArray.find((item) => item.key === itemKey);
+        setDataForLocalStorage(giftBoxes);
+        setDataForLocalStorage(endedNumberArray, "endNumbers");
         showItem(finalWord.value, true);
-        setExceptDataForLocalStorage(giftBoxes);
         buildGiftContainerItem();
         buildWordsArray();
       }
@@ -567,16 +568,21 @@
       }
 
       //로컬 스토리지에 데이터 저장하는 함수
-      function setExceptDataForLocalStorage(newItem) {
-        localStorage.setItem("savedData", JSON.stringify(newItem));
+      function setDataForLocalStorage(newItem, name) {
+        localStorage.setItem(name || "savedData", JSON.stringify(newItem));
       }
       //로컬 스토리지에서 데이터 가져오는 함수
-      function getExceptDataFromLocalStorage() {
-        return JSON.parse(localStorage.getItem("savedData")) || null;
+      function getDataForLocalStorage(name) {
+        return JSON.parse(localStorage.getItem(name || "savedData")) || null;
       }
 
+      //로컬 스토리지에서 데이터 초기화하는 함수(상품 배열과 이미 추첨한 번호의 배열)
       function initGiftBoxes() {
-        const savedData = getExceptDataFromLocalStorage();
+        const savedData = getDataForLocalStorage();
+        const savedEndData = getDataForLocalStorage("endNumbers");
+        if (savedEndData) {
+          endedNumberArray.splice(0, endedNumberArray.length, ...savedEndData);
+        }
         if (savedData) {
           giftBoxes.splice(0, giftBoxes.length, ...savedData);
         }
