@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>BUBAUM 추첨</title>
+    <style>
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes zoomIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.3) rotate(-10deg);
+          text-shadow: 0 0 0px rgb(0, 17, 255);
+          filter: brightness(0.8) blur(2px);
+        }
+        50% {
+          transform: scale(1.6) rotate(5deg);
+          filter: brightness(1.4) blur(0);
+        }
+        70% {
+          transform: scale(1.3) rotate(-3deg);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1.8);
+          text-shadow: 0 0 25px rgb(0, 102, 255), 0 0 40px rgb(0, 174, 255);
+          filter: brightness(1.8);
+        }
+      }
+      @keyframes confettiFall {
+        to {
+          transform: translateY(80vh) rotateZ(720deg); /* 화면 아래까지 낙하 + 더 많이 회전 */
+          opacity: 0;
+        }
+      }
+      @keyframes confettiRotate {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @font-face {
+        font-family: "Pretendard";
+        src: url("./Pretendard.ttf") format("truetype"); /* TTF */
+        font-weight: 400;
+        font-display: swap;
+      }
+      html,
+      body {
+        height: 100%;
+        background: white;
+        color: white;
+        font-family: "Pretendard", sans-serif;
+        overflow: hidden;
+        user-select: none;
+      }
+      .item-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        gap: 1%;
+        padding-left: 0.5%;
+        padding-right: 0.5%;
+      }
+      .flex-1 {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 250px;
+        height: 90%;
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .target-list {
+        box-shadow: 0 0 4px #000;
+        border-radius: 10px;
+        color: rgb(0, 128, 233);
+        font-size: 2.5rem;
+        background: white;
+        display: flex;
+        justify-content: start;
+        align-items: center;
+        border: none;
+        flex-direction: column;
+      }
+      #gift-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        padding-top: 20px;
+        width: calc(100% - 60px);
+        height: calc(100% - 120px);
+        column-gap: 30px;
+        row-gap: 20px;
+      }
+      .gift-item {
+        background: rgb(219, 219, 219);
+        color: rgb(59, 59, 59);
+        border-radius: 10px;
+        font-size: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .gift-item.special {
+        background: rgb(219, 219, 219);
+        color: rgb(0, 128, 233);
+      }
+      .selected {
+        background: rgb(0, 128, 233) !important;
+        color: white;
+      }
+      .selected-completed {
+        border: 1px solid rgb(0, 128, 233) !important;
+        background: white !important;
+        color: rgb(0, 128, 233) !important;
+      }
+      .slot {
+        border: none;
+        font-size: 18rem;
+        border-radius: 10px;
+        background: black;
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: 0 0 4px #000;
+      }
+      .slot-item {
+        font-size: 18rem;
+        opacity: 0;
+        animation: fadeIn 0.2s ease-out forwards;
+        position: absolute;
+      }
+      .slot-item.final {
+        animation: zoomIn 0.5s ease-out forwards;
+        text-shadow: 0 0 5px #00c3ff, 0 0 10px #00f0ff, 0 0 20px #00f0ff;
+
+        animation-timing-function: cubic-bezier(
+          0.19,
+          1,
+          0.22,
+          1
+        ); /* 좀 더 리치한 느낌 */
+      }
+      .before-start {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        color: white;
+        z-index: 5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 50px;
+        animation: fadeIn 0.2s ease-out forwards;
+        background: rgba(0, 0, 0, 0.5);
+      }
+      .footer {
+        position: fixed;
+        bottom: 15px;
+        left: 20px;
+        color: rgb(143, 143, 143);
+        z-index: 5;
+      }
+      .confetti-shape.circle {
+        border-radius: 50%;
+        animation: confettiRotate 1.5s linear forwards;
+      }
+
+      .confetti-shape.square {
+        /* 그대로 정사각형 */
+        animation: confettiRotate 1.5s linear forwards;
+      }
+
+      .confetti-shape.triangle {
+        width: 0;
+        height: 0;
+        border-left: 6px solid transparent;
+        border-right: 6px solid transparent;
+        border-bottom: 12px solid;
+        background: none !important;
+      }
+
+      .confetti-shape.star::before {
+        content: "★";
+        font-size: 14px;
+        display: block;
+        color: inherit;
+      }
+
+      .confetti-shape.star {
+        width: 14px;
+        height: 14px;
+        background: none !important;
+      }
+
+      .congrats-message {
+        position: absolute;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.5);
+        font-size: 3rem;
+        font-weight: bold;
+        color: #ffe600;
+        opacity: 0;
+        pointer-events: none;
+        text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff9900;
+        z-index: 100;
+        transition: all 0.5s ease-out;
+      }
+
+      .congrats-message.show {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2) rotate(1deg);
+        animation: popFade 1.2s ease-out forwards;
+      }
+
+      @keyframes popFade {
+        0% {
+          transform: translate(-50%, -50%) scale(0.5) rotate(-5deg);
+          opacity: 0;
+        }
+        30% {
+          transform: translate(-50%, -50%) scale(1.3) rotate(3deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1) rotate(0deg);
+          opacity: 1;
+        }
+      }
+
+      .toast-container {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toast-container" id="toast-container"></div>
+
+    <div class="congrats-message" id="congrats">
+      <div>🎉 축하합니다! 🎉</div>
+    </div>
+
+    <div class="item-container">
+      <div class="flex-1 target-list" style="flex: 1">
+        <div style="padding-top: 30px; font-weight: bold; font-size: 30px">
+          2025 BU바움 그룹 워크샵 경품 추첨
+        </div>
+        <div id="gift-container"></div>
+      </div>
+      <div class="flex-1" style="flex: 2">
+        <div class="before-start">BU바움</div>
+        <div class="slot" id="slot"></div>
+      </div>
+    </div>
+    <div class="footer">
+      Created by Fintech team Front Engineer &middot; All rights reserved
+    </div>
+    <script>
+      const toastContainer = document.getElementById("toast-container");
+      const beforeStart = document.querySelector(".before-start");
+      const giftContainer = document.getElementById("gift-container");
+      const slot = document.getElementById("slot");
+      let rolling = false;
+
+      const wordsArrayCount = 120;
+      const wordsArray = Array.from({ length: wordsArrayCount }, (_, i) => ({
+        key: i,
+        value: `${i + 1}`,
+      }));
+
+      const giftBoxes = [
+        { name: "닌텐도 스위치", selected: false, value: -1, isEnd: false },
+        { name: "소니 무선헤드셋", selected: false, value: -1, isEnd: false },
+        { name: "오버더 바이크", selected: false, value: -1, isEnd: false },
+        {
+          name: "다이슨 헤어드라이기",
+          selected: false,
+          value: -1,
+          isEnd: false,
+        },
+        {
+          name: "미닉스 음식물 처리기",
+          selected: false,
+          value: -1,
+          isEnd: false,
+        },
+        {
+          name: "삼성 카운터탑 식기세척기",
+          selected: false,
+          value: -1,
+          isEnd: false,
+        },
+        {
+          name: "LG 코드제로 R5 로봇청소기",
+          selected: false,
+          value: -1,
+          isEnd: false,
+        },
+        { name: "애플워치 10", selected: false, value: -1, isEnd: false },
+        { name: "플레이스테이션5", selected: false, value: -1, isEnd: false },
+        { name: "메타퀘스트3 VR", selected: false, value: -1, isEnd: false },
+        {
+          name: "다이슨 무선 청소기",
+          selected: false,
+          value: -1,
+          isEnd: false,
+        },
+        { name: "삼천리 전기자전거", selected: false, value: -1, isEnd: false },
+        { name: "2인 제주더 여행권", selected: false, value: -1, isEnd: false },
+        { name: "갤럭시 탭 (S10)", selected: false, value: -1, isEnd: false },
+        { name: "갤럭시 S25", selected: false, value: -1, isEnd: false },
+        {
+          name: "LG 트롬 오브제컬렉션 건조기",
+          selected: false,
+          value: -1,
+          isEnd: false,
+        },
+        { name: "LG 스탠바이미2", selected: false, value: -1, isEnd: false },
+        { name: "아이폰16", selected: false, value: -1, isEnd: false },
+        { name: "아이패드 에어11", selected: false, value: -1, isEnd: false },
+        {
+          name: "찬조 : 손스타상",
+          selected: false,
+          value: -1,
+          special: true,
+          isEnd: false,
+        },
+        {
+          name: "찬조 : 한지니어스상",
+          selected: false,
+          value: -1,
+          special: true,
+          isEnd: false,
+        },
+      ];
+
+      function buildWordsArray() {
+        wordsArray.splice(0, wordsArray.length); // Clear existing items
+        for (let i = 0; i < wordsArrayCount; i++) {
+          const isEnded = giftBoxes.find((item) => item.value === i);
+          if (!isEnded) {
+            wordsArray.push({
+              key: i,
+              value: `${i + 1}`,
+            });
+          }
+        }
+      }
+
+      function buildGiftContainerItem() {
+        giftContainer.innerHTML = ""; // Clear existing items
+        giftBoxes.forEach((item) => {
+          const newChild = document.createElement("div");
+          newChild.textContent = item.name;
+          if (item.special) {
+            newChild.classList.add("gift-item");
+            newChild.classList.add("special");
+          } else {
+            newChild.classList.add("gift-item");
+          }
+          if (item.selected) {
+            newChild.classList.add("selected-completed");
+          }
+          if (!item.isEnd) {
+            newChild.addEventListener("click", () => {
+              const childList = document.getElementsByClassName("gift-item");
+              if (rolling) return;
+              for (let i = 0; i < childList.length; i++) {
+                childList[i].classList.remove("selected");
+              }
+              //console.log(item);
+              if (!item.isEnd) {
+                if (item.selected) {
+                  item.selected = false;
+                  newChild.classList.remove("selected");
+                } else {
+                  item.selected = true;
+                  newChild.classList.add("selected");
+                }
+              }
+            });
+          } else {
+            newChild.textContent = `${item.name} (${item.value + 1}번)`;
+          }
+          giftContainer.appendChild(newChild);
+        });
+      }
+
+      let currentTimeout = null;
+      let currentSpeed = 500;
+
+      function clearSlot() {
+        while (slot.firstChild) {
+          slot.removeChild(slot.firstChild);
+        }
+      }
+
+      function showItem(word, isFinal = false) {
+        clearSlot();
+        const newChild = document.createElement("div");
+        newChild.textContent = word;
+        newChild.className = "slot-item" + (isFinal ? " final" : "");
+        slot.appendChild(newChild);
+      }
+
+      function rollLoop() {
+        if (!rolling) return;
+        const randomWord =
+          wordsArray[Math.floor(Math.random() * wordsArray.length)].value;
+        showItem(randomWord);
+        currentSpeed = Math.max(currentSpeed * 0.92, 50); // 더 빨라지도록 설정
+        currentTimeout = setTimeout(rollLoop, currentSpeed);
+      }
+
+      function startRolling() {
+        if (rolling) return;
+        const selectedItems = giftBoxes.filter(
+          (item) => item.selected && !item.isEnd
+        );
+        if (selectedItems.length === 0) {
+          showToast("상품을 선택하여 주세요.");
+          return;
+        }
+        beforeStart.style.display = "none";
+        rolling = true;
+        currentSpeed = 500;
+        rollLoop();
+      }
+
+      function stopRolling() {
+        rolling = false;
+        clearTimeout(currentTimeout);
+        let index = Math.floor(Math.random() * wordsArrayCount);
+        let preventLoop = 0;
+        let isEnded = wordsArray.find((item) => item.key === index);
+
+        while (!isEnded) {
+          index = Math.floor(Math.random() * wordsArrayCount);
+          isEnded = wordsArray.find((item) => item.key === index);
+          preventLoop++;
+          if (preventLoop > 100) {
+            break;
+          }
+        }
+
+        giftBoxes.forEach((item) => {
+          if (!item.isEnd && item.selected) {
+            item.value = index;
+            item.isEnd = true;
+          }
+        });
+
+        const finalWord = wordsArray.find((item) => item.key === index);
+        showItem(finalWord.value, true);
+        setExceptDataForLocalStorage(giftBoxes);
+        buildGiftContainerItem();
+        buildWordsArray();
+      }
+
+      function fireConfetti() {
+        const shapes = ["circle", "square", "triangle", "star"];
+        const confettiColors = [
+          "#00ff99",
+          "#ffff33",
+          "#33ccff",
+          "#ff6699",
+          "#ff3cac",
+          "#ffdd00",
+        ];
+
+        for (let i = 0; i < 200; i++) {
+          const len = Math.floor(Math.random() * 100);
+          setTimeout(() => {
+            const timeout = Math.floor(Math.random() * 1000);
+            const conf = document.createElement("div");
+            const shape = shapes[Math.floor(Math.random() * shapes.length)];
+            conf.className = `confetti-shape ${shape}`;
+            conf.style.position = "absolute";
+            conf.style.left = Math.random() * 100 + "%";
+            conf.style.top = Math.random() * 10 + "%";
+            conf.style.width = "12px";
+            conf.style.height = "12px";
+            conf.style.backgroundColor =
+              confettiColors[Math.floor(Math.random() * confettiColors.length)];
+            conf.style.opacity = 1;
+            conf.style.animation = `confettiFall 1.8s ease-out forwards`;
+            document.body.appendChild(conf);
+            setTimeout(() => conf.remove(), timeout);
+          }, len);
+        }
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          if (!rolling) {
+            startRolling();
+          } else {
+            stopRolling();
+            fireConfetti();
+            showCongrats();
+          }
+        }
+      });
+
+      function showCongrats() {
+        const el = document.getElementById("congrats");
+        el.classList.add("show");
+        // 3초 후 사라지게
+        setTimeout(() => {
+          el.classList.remove("show");
+        }, 3000);
+      }
+
+      // 토스트 메시지 생성 함수
+      function showToast(message, duration = 1000) {
+        const toast = document.createElement("div");
+        toast.textContent = message;
+        toast.style.padding = "22px 50px";
+        toast.style.background = "rgb(252 86 86)";
+        toast.style.color = "#fff";
+        toast.style.borderRadius = "6px";
+        toast.style.boxShadow = "rgba(255, 255, 255, 0.8) 0px 0px 20px";
+        toast.style.opacity = "0";
+        toast.style.fontSize = "33px";
+        toast.style.transition = "opacity 0.3s ease-in-out";
+        // 토스트 컨테이너에 추가
+        toastContainer.appendChild(toast);
+        // 애니메이션 적용
+        setTimeout(() => {
+          toast.style.opacity = "1";
+        }, 100);
+
+        // // 지정된 시간 후 삭제
+        setTimeout(() => {
+          toast.style.opacity = "0";
+          setTimeout(() => {
+            toast.remove();
+          }, 300); // 페이드아웃 시간
+        }, duration);
+      }
+
+      //로컬 스토리지에 데이터 저장하는 함수
+      function setExceptDataForLocalStorage(newItem) {
+        localStorage.setItem("savedData", JSON.stringify(newItem));
+      }
+      //로컬 스토리지에서 데이터 가져오는 함수
+      function getExceptDataFromLocalStorage() {
+        return JSON.parse(localStorage.getItem("savedData")) || null;
+      }
+
+      function initGiftBoxes() {
+        const savedData = getExceptDataFromLocalStorage();
+        if (savedData) {
+          giftBoxes.splice(0, giftBoxes.length, ...savedData);
+        }
+      }
+      initGiftBoxes();
+      buildWordsArray();
+      buildGiftContainerItem();
+    </script>
+  </body>
+</html>
