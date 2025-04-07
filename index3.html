@@ -260,6 +260,17 @@
         flex-direction: column;
         gap: 10px;
       }
+      .toast-item {
+        padding: 22px 50px;
+        background: rgb(252 86 86);
+        color: #fff;
+        border-radius: 6px;
+        box-shadow: rgba(255, 255, 255, 0.8) 0px 0px 20px;
+        opacity: 0;
+        font-size: 33px;
+        transition: opacity 0.3s ease-in-out;
+        position: relative;
+      }
     </style>
   </head>
   <body>
@@ -300,7 +311,7 @@
       let rolling = false; // 숫자가 돌아가는지 여부
       let currentTimeout = null; // 현재 타이머(숫자가 돌아가는)
       let currentSpeed = 500; // 현재 속도(숫자가 돌아가는 속도)
-      const wordsArrayCount = 4; //추첨 개수
+      const wordsArrayCount = 5; //추첨 개수
       const wordsArray = []; // 추첨 개수에 맞는 배열 생성
       const endedNumberArray = []; // 이미 당첨된 번호를 저장하는 배열
 
@@ -396,7 +407,7 @@
             //특별한 아이템인 경우
             newChild.classList.add("special");
           }
-          if (item.selected) {
+          if (item.isEnd) {
             newChild.classList.add("selected-completed");
           }
           newChild.addEventListener("click", () => {
@@ -405,6 +416,9 @@
             for (let i = 0; i < childList.length; i++) {
               childList[i].classList.remove("selected");
             }
+            giftBoxes.forEach((item) => {
+              item.selected = false;
+            });
             if (item.selected) {
               item.selected = false;
               newChild.classList.remove("selected");
@@ -446,6 +460,11 @@
       function startRolling() {
         if (rolling) return;
         const selectedItems = giftBoxes.filter((item) => item.selected);
+        const isEndedLength = endedNumberArray.length == wordsArrayCount;
+        if (isEndedLength) {
+          showToast("모든 상품이 추첨되었습니다.");
+          return;
+        }
         if (selectedItems.length === 0) {
           showToast("상품을 선택하여 주세요.");
           return;
@@ -457,32 +476,39 @@
       }
 
       function stopRolling() {
-        rolling = false;
-        clearTimeout(currentTimeout);
-        let itemKey = Math.floor(Math.random() * wordsArrayCount);
-        let preventLoop = 0;
-        let isEnded = endedNumberArray.find((number) => number === itemKey);
-        while (isEnded != undefined) {
-          itemKey = Math.floor(Math.random() * wordsArrayCount);
-          isEnded = endedNumberArray.find((number) => number === itemKey);
-          preventLoop++;
-          if (preventLoop > 50000) {
-            break;
+        try {
+          clearTimeout(currentTimeout);
+          let itemKey = Math.floor(Math.random() * wordsArrayCount);
+          let preventLoop = 0;
+          let isEnded = endedNumberArray.find((number) => number === itemKey);
+          while (isEnded != undefined) {
+            itemKey = Math.floor(Math.random() * wordsArrayCount);
+            isEnded = endedNumberArray.find((number) => number === itemKey);
+            preventLoop++;
+            if (preventLoop > 50000) {
+              break;
+            }
           }
+          giftBoxes.forEach((item) => {
+            if (item.selected) {
+              item.value = itemKey;
+              item.isEnd = true;
+              console.log(item);
+            }
+          });
+          endedNumberArray.push(itemKey);
+          const finalWord = wordsArray.find((item) => item.key === itemKey);
+          setDataForLocalStorage(giftBoxes);
+          setDataForLocalStorage(endedNumberArray, "endNumbers");
+          showItem(finalWord.value, true);
+          buildGiftContainerItem();
+          buildWordsArray();
+        } catch (error) {
+          console.error("Error in stopRolling:", error);
+          showToast("오류가 발생했습니다. 다시 시도해주세요.");
+        } finally {
+          rolling = false;
         }
-        giftBoxes.forEach((item) => {
-          if (item.selected) {
-            item.value = itemKey;
-            item.isEnd = true;
-          }
-        });
-        endedNumberArray.push(itemKey);
-        const finalWord = wordsArray.find((item) => item.key === itemKey);
-        setDataForLocalStorage(giftBoxes);
-        setDataForLocalStorage(endedNumberArray, "endNumbers");
-        showItem(finalWord.value, true);
-        buildGiftContainerItem();
-        buildWordsArray();
       }
 
       function fireConfetti() {
@@ -551,6 +577,7 @@
         toast.style.opacity = "0";
         toast.style.fontSize = "33px";
         toast.style.transition = "opacity 0.3s ease-in-out";
+        toast.classList.add("toast-item");
         // 토스트 컨테이너에 추가
         toastContainer.appendChild(toast);
         // 애니메이션 적용
