@@ -311,8 +311,9 @@
       let rolling = false; // 숫자가 돌아가는지 여부
       let isStopping = false; // 멈춤 액션이 끝났는지 여부
       let currentTimeout = null; // 현재 타이머(숫자가 돌아가는)
-      let currentSpeed = 2000; // 현재 속도(숫자가 돌아가는 속도)
-      const wordsArrayCount = 92; //추첨 개수
+      const firstSpeed = 800; // 초기 속도(숫자가 돌아가는 속도)
+      let currentSpeed = firstSpeed; // 현재 속도(숫자가 돌아가는 속도)
+      const wordsArrayCount = 10; //추첨 개수
       const wordsArray = []; // 추첨 개수에 맞는 배열 생성
       const endedNumberArray = []; // 이미 당첨된 번호를 저장하는 배열
 
@@ -454,7 +455,7 @@
         const randomWord =
           wordsArray[Math.floor(Math.random() * wordsArray.length)].value;
         showItem(randomWord);
-        currentSpeed = Math.max(currentSpeed * 0.92, 50); // 더 빨라지도록 설정
+        currentSpeed = Math.max(currentSpeed * 0.9, 50); // 더 빨라지도록 설정
         currentTimeout = setTimeout(rollLoop, currentSpeed);
       }
 
@@ -472,7 +473,7 @@
         }
         beforeStart.style.display = "none";
         rolling = true;
-        currentSpeed = 500;
+        currentSpeed = firstSpeed;
         rollLoop();
       }
 
