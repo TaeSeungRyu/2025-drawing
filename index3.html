@@ -7,7 +7,7 @@
       @keyframes fadeIn {
         0% {
           opacity: 0;
-          transform: scale(0.9);
+          transform: scale(2);
         }
         100% {
           opacity: 1;
@@ -311,7 +311,7 @@
       let rolling = false; // 숫자가 돌아가는지 여부
       let isStopping = false; // 멈춤 액션이 끝났는지 여부
       let currentTimeout = null; // 현재 타이머(숫자가 돌아가는)
-      let currentSpeed = 500; // 현재 속도(숫자가 돌아가는 속도)
+      let currentSpeed = 2000; // 현재 속도(숫자가 돌아가는 속도)
       const wordsArrayCount = 92; //추첨 개수
       const wordsArray = []; // 추첨 개수에 맞는 배열 생성
       const endedNumberArray = []; // 이미 당첨된 번호를 저장하는 배열
@@ -559,7 +559,14 @@
             startRolling();
           } else {
             stopRolling();
-            fireConfetti();
+            let fireConfettiCount = 0;
+            const fireConfettiInterval = setInterval(() => {
+              fireConfettiCount++;
+              if (fireConfettiCount > 3) {
+                clearInterval(fireConfettiInterval);
+              }
+              fireConfetti();
+            }, 250);
             showCongrats();
           }
         }
@@ -578,14 +585,6 @@
       function showToast(message, duration = 1000) {
         const toast = document.createElement("div");
         toast.textContent = message;
-        toast.style.padding = "22px 50px";
-        toast.style.background = "rgb(252 86 86)";
-        toast.style.color = "#fff";
-        toast.style.borderRadius = "6px";
-        toast.style.boxShadow = "rgba(255, 255, 255, 0.8) 0px 0px 20px";
-        toast.style.opacity = "0";
-        toast.style.fontSize = "33px";
-        toast.style.transition = "opacity 0.3s ease-in-out";
         toast.classList.add("toast-item");
         // 토스트 컨테이너에 추가
         toastContainer.appendChild(toast);
